@@ -218,9 +218,13 @@ def main():
     print("  Synced.")
 
     # ---------------------------------------------------------------
-    # Step 7: Commit and update cursor
+    # Step 7: Update cursor, then commit (cursor goes into the same commit)
     # ---------------------------------------------------------------
-    step("Step 7: Commit and update cursor")
+    step("Step 7: Update cursor and commit")
+
+    CURSOR_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CURSOR_FILE.write_text(current_head)
+    print(f"  Cursor updated to: {current_head[:12]}")
 
     run(["git", "add", "-A"], cwd=str(PROACTIVA_DIR))
 
@@ -240,11 +244,6 @@ def main():
         )
         run(["git", "commit", "-m", commit_msg], cwd=str(PROACTIVA_DIR))
         print(f"  Committed: {changed_files} files changed")
-
-    # Update cursor
-    CURSOR_FILE.parent.mkdir(parents=True, exist_ok=True)
-    CURSOR_FILE.write_text(current_head)
-    print(f"  Cursor updated to: {current_head[:12]}")
 
     # Cleanup
     step("Cleanup")
