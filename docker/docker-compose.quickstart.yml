@@ -1,0 +1,18 @@
+services:
+  proactiva:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "${PROACTIVA_PORT:-3100}:3100"
+    environment:
+      HOST: "0.0.0.0"
+      PROACTIVA_HOME: "/proactiva"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      PROACTIVA_DEPLOYMENT_MODE: "authenticated"
+      PROACTIVA_DEPLOYMENT_EXPOSURE: "private"
+      PROACTIVA_PUBLIC_URL: "${PROACTIVA_PUBLIC_URL:-http://localhost:3100}"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
+    volumes:
+      - "${PROACTIVA_DATA_DIR:-../data/docker-proactiva}:/proactiva"

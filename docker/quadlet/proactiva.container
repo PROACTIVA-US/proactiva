@@ -1,0 +1,23 @@
+[Unit]
+Description=Proactiva AI Agent Orchestrator
+Requires=proactiva-db.service
+After=proactiva-db.service
+
+[Container]
+Image=proactiva-local
+ContainerName=proactiva
+Pod=proactiva.pod
+Volume=%h/.local/share/proactiva:/proactiva:Z
+Environment=HOST=0.0.0.0
+Environment=PROACTIVA_HOME=/proactiva
+Environment=PROACTIVA_DEPLOYMENT_MODE=authenticated
+Environment=PROACTIVA_DEPLOYMENT_EXPOSURE=private
+Environment=PROACTIVA_PUBLIC_URL=http://localhost:3100
+EnvironmentFile=%h/.config/containers/systemd/proactiva.env
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

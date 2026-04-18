@@ -1,0 +1,40 @@
+FROM ubuntu:24.04
+
+ARG NODE_MAJOR=20
+ARG PROACTIVAAI_VERSION=latest
+ARG HOST_UID=10001
+
+ENV DEBIAN_FRONTEND=noninteractive \
+  PROACTIVA_HOME=/proactiva \
+  PROACTIVA_OPEN_ON_LISTEN=false \
+  HOST=0.0.0.0 \
+  PORT=3100 \
+  HOME=/home/proactiva \
+  LANG=en_US.UTF-8 \
+  LC_ALL=en_US.UTF-8 \
+  NPM_CONFIG_UPDATE_NOTIFIER=false \
+  NODE_MAJOR=${NODE_MAJOR} \
+  PROACTIVAAI_VERSION=${PROACTIVAAI_VERSION}
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl gnupg locales \
+  && mkdir -p /etc/apt/keyrings \
+  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+    | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" \
+    > /etc/apt/sources.list.d/nodesource.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends nodejs \
+  && locale-gen en_US.UTF-8 \
+  && groupadd --gid 10001 proactiva \
+  && useradd --create-home --shell /bin/bash --uid "${HOST_UID}" --gid 10001 proactiva \
+  && mkdir -p /proactiva /home/proactiva/workspace \
+  && chown -R proactiva:proactiva /proactiva /home/proactiva \
+  && rm -rf /var/lib/apt/lists/*
+
+VOLUME ["/proactiva"]
+WORKDIR /home/proactiva/workspace
+EXPOSE 3100
+USER proactiva
+
+CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$PROACTIVA_HOME\"; npx --yes \"proactiva@${PROACTIVAAI_VERSION}\" onboard --yes --data-dir \"$PROACTIVA_HOME\""]

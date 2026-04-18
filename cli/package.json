@@ -1,0 +1,62 @@
+{
+  "name": "proactiva",
+  "version": "0.3.1",
+  "description": "Proactiva CLI — orchestrate AI agent teams to run a business",
+  "type": "module",
+  "bin": {
+    "proactiva": "./dist/index.js"
+  },
+  "keywords": [
+    "proactiva",
+    "ai",
+    "agents",
+    "orchestration",
+    "cli"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PROACTIVA-US/proactiva",
+    "directory": "cli"
+  },
+  "homepage": "https://github.com/PROACTIVA-US/proactiva",
+  "bugs": {
+    "url": "https://github.com/PROACTIVA-US/proactiva/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "node --input-type=module -e \"import esbuild from 'esbuild'; import config from './esbuild.config.mjs'; await esbuild.build(config);\" && chmod +x dist/index.js",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "@proactiva/adapter-claude-local": "workspace:*",
+    "@proactiva/adapter-codex-local": "workspace:*",
+    "@proactiva/adapter-cursor-local": "workspace:*",
+    "@proactiva/adapter-gemini-local": "workspace:*",
+    "@proactiva/adapter-opencode-local": "workspace:*",
+    "@proactiva/adapter-pi-local": "workspace:*",
+    "@proactiva/adapter-openclaw-gateway": "workspace:*",
+    "@proactiva/adapter-utils": "workspace:*",
+    "@proactiva/db": "workspace:*",
+    "@proactiva/server": "workspace:*",
+    "@proactiva/shared": "workspace:*",
+    "drizzle-orm": "0.38.4",
+    "dotenv": "^17.0.1",
+    "commander": "^13.1.0",
+    "embedded-postgres": "^18.1.0-beta.16",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
