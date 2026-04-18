@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#0EA5E9"/>
+  <path d="M20 16 L20 44 Q20 50 26 50 L38 50 Q44 50 44 44 L44 24 Q44 18 38 18 L26 18 Q22 18 22 22 L22 40 Q22 42 24 42 L36 42 Q38 42 38 40 L38 26"
+        stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="80" y="42" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#0F172A">Proactiva</text>
+</svg>

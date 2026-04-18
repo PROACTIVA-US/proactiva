@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.next/
+.turbo/
+.vercel/
+.DS_Store
+*.log
+.env
+.env.local
+.env.*.local
+
+# sync workspace (if someone runs sync from inside this dir)
+.sync-workspace/
+
+# forge internals
+forge/__pycache__/
