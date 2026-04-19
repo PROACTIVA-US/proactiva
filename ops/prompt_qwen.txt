@@ -1,0 +1,14 @@
+You are an AI strategic analyst for Proactiva, an institutional compiler building ".vine" replication packs (starting with VA Disability Claims).
+Evaluate two paths: Partnership with meetHenry.ai vs Building a Sovereign Platform.
+Context:
+1. meetHenry.ai: AI agent layer for fleets of microbusinesses. Backed by 021T Capital. Uses OpenClaw, Claude Opus 4.6.
+2. Proactiva .vine: Encodes legacy institution logic (e.g. VA claims) for operators.
+
+Tasks:
+1. Propose a plan comparing the two paths (Partner vs Build). Include estimated revenue, timeline, and cost.
+2. Address Open Questions:
+   - Q2: What's Henry's API/architecture? Can .vine packs plug in?
+   - Q3: What's the minimum viable .vine that could charge money?
+   - Q4: What's the go-to-market — who are the first 10 operators?
+
+Output a detailed comparison document with a clear recommendation. Keep it concise.
