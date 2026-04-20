@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.proactiva.forge</string>
+
+    <!--
+        Runs the forge autopilot every 6 hours (StartInterval in seconds).
+        This is more robust to a Mac that sleeps a lot than a specific clock
+        time, and cheap when the cursor already matches upstream HEAD (a
+        shallow clone + quick compare is the full cost of a no-op run).
+
+        Use `launchctl list com.proactiva.forge` to inspect status and
+        `forge/uninstall-autopilot.sh` to stop it. See README-autopilot.md.
+    -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-lc</string>
+        <string>exec "$HOME/Projects/proactiva/forge/autopilot.sh"</string>
+    </array>
+
+    <key>StartInterval</key>
+    <integer>21600</integer>
+
+    <!-- Don't fire on every login; the interval timer is enough. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- Capture stdout/stderr in case the wrapper itself dies before logging. -->
+    <key>StandardOutPath</key>
+    <string>/tmp/com.proactiva.forge.out</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/com.proactiva.forge.err</string>
+
+    <!-- Don't re-launch on failure; daily cadence is enough. -->
+    <key>KeepAlive</key>
+    <false/>
+</dict>
+</plist>

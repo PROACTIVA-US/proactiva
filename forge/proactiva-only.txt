@@ -1,0 +1,47 @@
+# Paths that live only in Proactiva — rsync must not delete these when
+# syncing from upstream. Patterns use rsync --exclude-from syntax (glob-like,
+# relative to the sync root). Add new Proactiva-exclusive files here whenever
+# you create code that doesn't exist in the upstream tree.
+
+# Forge tooling itself (already excluded by sync_upstream but listed here too
+# so a standalone rsync call respects it).
+/forge/
+/forge/**
+
+# Proactiva-specific pages (consultant + client flows).
+/ui/src/pages/ClientDashboard.tsx
+/ui/src/pages/ClientIntake.tsx
+/ui/src/pages/NewCompany.tsx
+/ui/src/pages/PracticeSetup.tsx
+
+# Proactiva-specific components.
+/ui/src/components/ProactivaLogo.tsx
+/ui/src/components/ThemeToggle.tsx
+/ui/src/components/TransportBar.tsx
+
+# Proactiva-specific lib utilities.
+/ui/src/lib/practice-company.ts
+/ui/src/lib/seed-starter-agents.ts
+/ui/src/lib/useEngagementSession.ts
+/ui/src/lib/useTheme.ts
+
+# Top-level design-reference imports (not part of the main operator UI).
+/dashboard/
+/dashboard/**
+
+# Business / roadmap / ops docs owned by Proactiva.
+/ROADMAP.md
+/ops/
+/ops/**
+
+# Editor and environment state that shouldn't be touched by sync.
+/.env
+/.env.local
+/.claude/
+/.claude/**
+/data/
+/data/**
+
+# Git artifacts.
+/.git/
+/.git/**
