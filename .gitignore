@@ -55,3 +55,8 @@ tests/release-smoke/test-results/
 tests/release-smoke/playwright-report/
 .superset/
 .claude/worktrees/
+
+# Forge autopilot runtime artifacts (regenerated on every run)
+forge/logs/
+forge/.autopilot.lock
+forge/.autopilot-status.json

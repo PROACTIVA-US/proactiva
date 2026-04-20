@@ -18,10 +18,11 @@ Usage:
 """
 
 import argparse
+import json
 import shutil
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 PAPERCLIP_REPO = "https://github.com/paperclipai/paperclip.git"
@@ -30,6 +31,8 @@ FORGE_DIR = PROACTIVA_DIR / "forge"
 REBRAND_SCRIPT = FORGE_DIR / "rebrand.py"
 CURSOR_FILE = FORGE_DIR / ".cursors" / "paperclip.last"
 WORK_DIR = Path.home() / "Projects" / ".proactiva-sync-workspace"
+PROACTIVA_ONLY_FILE = FORGE_DIR / "proactiva-only.txt"
+STATUS_FILE = FORGE_DIR / ".autopilot-status.json"
 
 
 def run(cmd, cwd=None, check=True):
@@ -49,12 +52,94 @@ def step(msg):
     print(f"{'='*60}")
 
 
+def write_status(outcome: str, detail: str, cursor: str | None = None) -> None:
+    """Persist the autopilot outcome so logs / external tooling can see it."""
+    try:
+        STATUS_FILE.write_text(
+            json.dumps(
+                {
+                    "outcome": outcome,
+                    "detail": detail,
+                    "cursor": cursor,
+                    "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+    except OSError as err:
+        print(f"  (could not write status file: {err})")
+
+
+def run_gate(label: str, cmd: list[str], cwd: Path) -> bool:
+    """Run a safety gate command. Returns True on success, False on failure."""
+    print(f"\n  Gate: {label}")
+    result = run(cmd, cwd=str(cwd), check=False)
+    if result.returncode == 0:
+        print(f"  Gate passed: {label}")
+        return True
+    # Preserve tail of stderr/stdout for the log.
+    print(f"  Gate failed: {label} (exit {result.returncode})")
+    tail = (result.stderr or result.stdout or "")[-800:]
+    if tail:
+        print(f"  --- tail ---\n{tail}\n  --- end ---")
+    return False
+
+
+def notify(title: str, message: str) -> None:
+    """Send a native macOS notification. No-op on failure."""
+    try:
+        script = f'display notification {json.dumps(message)} with title {json.dumps(title)} sound name "Glass"'
+        subprocess.run(["osascript", "-e", script], capture_output=True, timeout=5)
+    except Exception:
+        pass
+
+
+def current_branch(cwd: Path) -> str:
+    result = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=str(cwd), check=False)
+    return result.stdout.strip()
+
+
+def tree_is_clean(cwd: Path) -> bool:
+    result = run(["git", "status", "--porcelain"], cwd=str(cwd), check=False)
+    return not result.stdout.strip()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="Show changes without applying")
     parser.add_argument("--no-clone", action="store_true",
                         help="Skip clone, reuse existing workspace")
+    parser.add_argument("--skip-gates", action="store_true",
+                        help="Skip post-sync typecheck gates (NOT recommended for autopilot)")
+    parser.add_argument("--autopilot", action="store_true",
+                        help="Run in unattended mode: write status file, notify on failure/success, auto-push")
+    parser.add_argument("--allow-any-branch", action="store_true",
+                        help="Skip the 'must be on main' pre-flight check")
+    parser.add_argument("--no-push", action="store_true",
+                        help="In autopilot mode, skip the auto-push after commit")
     args = parser.parse_args()
+
+    # ---------------------------------------------------------------
+    # Pre-flight safety checks — never stomp uncommitted work or commit
+    # to a feature branch.
+    # ---------------------------------------------------------------
+    branch = current_branch(PROACTIVA_DIR)
+    if not args.allow_any_branch and branch != "main":
+        msg = f"aborting: current branch is '{branch}', expected 'main' (use --allow-any-branch to override)"
+        print(f"  {msg}")
+        if args.autopilot:
+            write_status("skipped", msg, cursor=None)
+            notify("Forge sync skipped", f"Not on main (on '{branch}')")
+        sys.exit(0 if args.autopilot else 1)
+
+    if not tree_is_clean(PROACTIVA_DIR) and not args.dry_run:
+        msg = "aborting: working tree has uncommitted changes (commit, stash, or discard them first)"
+        print(f"  {msg}")
+        if args.autopilot:
+            write_status("skipped", msg, cursor=None)
+            notify("Forge sync skipped", "Working tree dirty — commit or stash first")
+        sys.exit(0 if args.autopilot else 1)
 
     # ---------------------------------------------------------------
     # Step 1: Clone paperclip to temp dir
@@ -94,6 +179,8 @@ def main():
         print("\n  Already up to date. Nothing to sync.")
         if not args.no_clone:
             shutil.rmtree(WORK_DIR)
+        if args.autopilot:
+            write_status("no_op", "cursor matches upstream HEAD", cursor=current_head)
         return
 
     # ---------------------------------------------------------------
@@ -137,6 +224,7 @@ def main():
         "--exclude=node_modules",
         "--exclude=.DS_Store",
         "--exclude=forge/",
+        f"--exclude-from={PROACTIVA_ONLY_FILE}",
         f"{WORK_DIR}/",
         f"{PROACTIVA_DIR}/"
     ], check=False)
@@ -164,6 +252,8 @@ def main():
     if not file_changes:
         print("\n  No changes detected. Already in sync.")
         shutil.rmtree(WORK_DIR)
+        if args.autopilot:
+            write_status("no_op", "workspace identical to current tree", cursor=current_head)
         return
 
     # ---------------------------------------------------------------
@@ -201,6 +291,8 @@ def main():
         print(f"  Would sync {len(file_changes)} files to {PROACTIVA_DIR}")
         print("  Run without --dry-run to apply.")
         shutil.rmtree(WORK_DIR)
+        if args.autopilot:
+            write_status("dry_run", f"{len(file_changes)} files would change", cursor=current_head)
         return
 
     step("Step 6: Apply changes to proactiva")
@@ -211,11 +303,42 @@ def main():
         "--exclude=node_modules",
         "--exclude=.DS_Store",
         "--exclude=forge/",
+        f"--exclude-from={PROACTIVA_ONLY_FILE}",
         f"{WORK_DIR}/",
         f"{PROACTIVA_DIR}/"
     ], check=False)
 
     print("  Synced.")
+
+    # ---------------------------------------------------------------
+    # Step 6b: Safety gates
+    # Run typecheck before we commit. If it fails we leave the working tree
+    # as-is so the human can inspect + decide. We DON'T auto-revert because
+    # partial syncs are informative — they tell you which upstream change
+    # needs new POST_REBRAND_STRIPS or a structural code fix.
+    # ---------------------------------------------------------------
+    if not args.skip_gates:
+        step("Step 6b: Safety gates")
+        gate_ok = run_gate("pnpm typecheck", ["pnpm", "-r", "typecheck"], PROACTIVA_DIR)
+        if not gate_ok:
+            print(
+                "\n  TYPECHECK FAILED. Leaving working tree uncommitted for review."
+                "\n  To inspect: cd proactiva && git status"
+                "\n  To revert:  git restore . && git clean -fd"
+            )
+            shutil.rmtree(WORK_DIR)
+            if args.autopilot:
+                write_status(
+                    "failed",
+                    "typecheck failed after sync; working tree left uncommitted",
+                    cursor=current_head,
+                )
+                notify(
+                    "Forge sync FAILED",
+                    f"Typecheck broke after syncing {current_head[:12]}. Working tree left uncommitted.",
+                )
+                sys.exit(2)
+            return
 
     # ---------------------------------------------------------------
     # Step 7: Update cursor, then commit (cursor goes into the same commit)
@@ -245,11 +368,47 @@ def main():
         run(["git", "commit", "-m", commit_msg], cwd=str(PROACTIVA_DIR))
         print(f"  Committed: {changed_files} files changed")
 
+    # ---------------------------------------------------------------
+    # Step 8: Auto-push (autopilot only)
+    # Solo-operator default. Push current branch to origin. Push failure
+    # is logged but doesn't roll back the local commit — the human can
+    # resolve and push manually.
+    # ---------------------------------------------------------------
+    push_outcome = None
+    if args.autopilot and not args.no_push and changed_files > 0:
+        step("Step 8: Auto-push to origin")
+        push_result = run(["git", "push", "origin", branch], cwd=str(PROACTIVA_DIR), check=False)
+        if push_result.returncode == 0:
+            print("  Pushed.")
+            push_outcome = "pushed"
+        else:
+            print("  Push failed — commit is local only.")
+            tail = (push_result.stderr or push_result.stdout or "")[-400:]
+            if tail:
+                print(f"  --- tail ---\n{tail}\n  --- end ---")
+            push_outcome = "push_failed"
+
     # Cleanup
     step("Cleanup")
     shutil.rmtree(WORK_DIR)
     print("  Working directory removed.")
     print("\n  SYNC COMPLETE.")
+    if args.autopilot:
+        if changed_files == 0:
+            write_status("no_op", "no changes to commit", cursor=current_head)
+        elif push_outcome == "pushed":
+            write_status("pushed", f"{changed_files} files committed and pushed", cursor=current_head)
+            notify("Forge sync pushed", f"{changed_files} files committed and pushed ({current_head[:12]})")
+        elif push_outcome == "push_failed":
+            write_status(
+                "push_failed",
+                f"{changed_files} files committed locally; push to origin failed",
+                cursor=current_head,
+            )
+            notify("Forge sync: push failed", f"Committed locally but push to origin failed. Resolve manually.")
+        else:
+            write_status("committed", f"{changed_files} files committed (push skipped)", cursor=current_head)
+            notify("Forge sync committed", f"{changed_files} files committed (push skipped)")
 
 
 def _count_rebrand_rules() -> int:
