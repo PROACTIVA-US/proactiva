@@ -9,7 +9,7 @@ import type {
   IssueComment,
 } from "@proactiva/shared";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Copy, Proactiva } from "lucide-react";
+import { ArrowRight, Check, Copy, Image } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Identity } from "./Identity";
 import { InlineEntitySelector, type InlineEntityOption } from "./InlineEntitySelector";
@@ -939,7 +939,7 @@ export function CommentThread({
                   disabled={attaching}
                   title="Attach image"
                 >
-                  <Proactiva className="h-4 w-4" />
+                  <Image className="h-4 w-4" />
                 </Button>
               </div>
             )}

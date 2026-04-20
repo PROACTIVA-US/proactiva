@@ -95,8 +95,274 @@ ASSET_SWAPS = [
 # Content to delete
 # ---------------------------------------------------------------------------
 
-DIRS_TO_DELETE: list[str] = []
-FILES_TO_DELETE: list[str] = []
+DIRS_TO_DELETE: list[str] = [
+    # Hermes is a third-party paperclip adapter published only under the
+    # paperclip name on npm. Proactiva ships without it — see POST_REBRAND_STRIPS.
+    "ui/src/adapters/hermes-local",
+]
+FILES_TO_DELETE: list[str] = [
+    "ui/src/components/HermesIcon.tsx",
+    # The paperclip 4-step onboarding wizard is replaced by wildvine-styled
+    # PracticeSetup, NewCompany, and ClientIntake pages. Wipe the wizard
+    # whenever the sync re-introduces it.
+    "ui/src/components/OnboardingWizard.tsx",
+    "ui/src/components/AsciiArtAnimation.tsx",
+    "ui/src/lib/onboarding-route.ts",
+    "ui/src/lib/onboarding-route.test.ts",
+    "ui/src/lib/onboarding-launch.ts",
+    "ui/src/lib/onboarding-launch.test.ts",
+    "ui/src/lib/onboarding-goal.ts",
+    "ui/src/lib/onboarding-goal.test.ts",
+]
+
+# ---------------------------------------------------------------------------
+# Post-rebrand exact-string removals
+#
+# Each tuple: (rel_path, old_chunk, new_chunk). Applied after text replacement
+# so the "paperclip → proactiva" rename has already landed. If old_chunk is not
+# found verbatim, we warn loudly — that means upstream refactored and we need
+# to update the patch here rather than let the diff quietly re-enter the tree.
+# ---------------------------------------------------------------------------
+
+POST_REBRAND_STRIPS: list[tuple[str, str, str]] = [
+    # --- ui/package.json: drop the external hermes dep line ---
+    (
+        "ui/package.json",
+        '    "hermes-proactiva-adapter": "^0.2.0",\n',
+        "",
+    ),
+    # --- server/package.json: drop the external hermes dep line ---
+    (
+        "server/package.json",
+        '    "hermes-proactiva-adapter": "^0.2.0",\n',
+        "",
+    ),
+    # --- ui/src/adapters/registry.ts: drop import + array entry ---
+    (
+        "ui/src/adapters/registry.ts",
+        'import { openClawGatewayUIAdapter } from "./openclaw-gateway";\n'
+        'import { hermesLocalUIAdapter } from "./hermes-local";\n'
+        'import { processUIAdapter } from "./process";\n',
+        'import { openClawGatewayUIAdapter } from "./openclaw-gateway";\n'
+        'import { processUIAdapter } from "./process";\n',
+    ),
+    (
+        "ui/src/adapters/registry.ts",
+        "    claudeLocalUIAdapter,\n"
+        "    codexLocalUIAdapter,\n"
+        "    geminiLocalUIAdapter,\n"
+        "    hermesLocalUIAdapter,\n"
+        "    openCodeLocalUIAdapter,\n",
+        "    claudeLocalUIAdapter,\n"
+        "    codexLocalUIAdapter,\n"
+        "    geminiLocalUIAdapter,\n"
+        "    openCodeLocalUIAdapter,\n",
+    ),
+    # --- ui/src/adapters/adapter-display-registry.ts: drop icon import + entry ---
+    (
+        "ui/src/adapters/adapter-display-registry.ts",
+        'import { OpenCodeLogoIcon } from "@/components/OpenCodeLogoIcon";\n'
+        'import { HermesIcon } from "@/components/HermesIcon";\n',
+        'import { OpenCodeLogoIcon } from "@/components/OpenCodeLogoIcon";\n',
+    ),
+    (
+        "ui/src/adapters/adapter-display-registry.ts",
+        "  hermes_local: {\n"
+        '    label: "Hermes Agent",\n'
+        '    description: "Local Hermes CLI agent",\n'
+        "    icon: HermesIcon,\n"
+        "  },\n"
+        "  pi_local: {\n",
+        "  pi_local: {\n",
+    ),
+    # --- ui/src/adapters/use-adapter-capabilities.ts: drop hermes_local row ---
+    (
+        "ui/src/adapters/use-adapter-capabilities.ts",
+        "  pi_local: { supportsInstructionsBundle: true, supportsSkills: true, supportsLocalAgentJwt: true, requiresMaterializedRuntimeSkills: true },\n"
+        "  hermes_local: { supportsInstructionsBundle: true, supportsSkills: true, supportsLocalAgentJwt: true, requiresMaterializedRuntimeSkills: false },\n"
+        "  openclaw_gateway: ALL_FALSE,\n",
+        "  pi_local: { supportsInstructionsBundle: true, supportsSkills: true, supportsLocalAgentJwt: true, requiresMaterializedRuntimeSkills: true },\n"
+        "  openclaw_gateway: ALL_FALSE,\n",
+    ),
+    # --- server/src/adapters/registry.ts: drop imports, adapter def, array entry ---
+    (
+        "server/src/adapters/registry.ts",
+        "import {\n"
+        "  execute as hermesExecute,\n"
+        "  testEnvironment as hermesTestEnvironment,\n"
+        "  sessionCodec as hermesSessionCodec,\n"
+        "  listSkills as hermesListSkills,\n"
+        "  syncSkills as hermesSyncSkills,\n"
+        "  detectModel as detectModelFromHermes,\n"
+        '} from "hermes-proactiva-adapter/server";\n'
+        "import {\n"
+        "  agentConfigurationDoc as hermesAgentConfigurationDoc,\n"
+        "  models as hermesModels,\n"
+        '} from "hermes-proactiva-adapter";\n'
+        'import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";\n',
+        'import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";\n',
+    ),
+    (
+        "server/src/adapters/registry.ts",
+        "const hermesLocalAdapter: ServerAdapterModule = {\n"
+        '  type: "hermes_local",\n'
+        "  execute: hermesExecute,\n"
+        "  testEnvironment: hermesTestEnvironment,\n"
+        "  sessionCodec: hermesSessionCodec,\n"
+        "  listSkills: hermesListSkills,\n"
+        "  syncSkills: hermesSyncSkills,\n"
+        "  models: hermesModels,\n"
+        "  supportsLocalAgentJwt: true,\n"
+        "  supportsInstructionsBundle: true,\n"
+        '  instructionsPathKey: "instructionsFilePath",\n'
+        "  requiresMaterializedRuntimeSkills: false,\n"
+        "  agentConfigurationDoc: hermesAgentConfigurationDoc,\n"
+        "  detectModel: () => detectModelFromHermes(),\n"
+        "};\n"
+        "\n"
+        "const adaptersByType = new Map<string, ServerAdapterModule>();\n",
+        "const adaptersByType = new Map<string, ServerAdapterModule>();\n",
+    ),
+    (
+        "server/src/adapters/registry.ts",
+        "    openclawGatewayAdapter,\n"
+        "    hermesLocalAdapter,\n"
+        "    processAdapter,\n",
+        "    openclawGatewayAdapter,\n"
+        "    processAdapter,\n",
+    ),
+    # --- server/src/adapters/builtin-adapter-types.ts ---
+    (
+        "server/src/adapters/builtin-adapter-types.ts",
+        '  "pi_local",\n  "hermes_local",\n  "process",\n',
+        '  "pi_local",\n  "process",\n',
+    ),
+    # --- server/src/services/heartbeat.ts: drop from SESSIONED_LOCAL_ADAPTERS ---
+    (
+        "server/src/services/heartbeat.ts",
+        '  "gemini_local",\n  "hermes_local",\n  "opencode_local",\n  "pi_local",\n]);',
+        '  "gemini_local",\n  "opencode_local",\n  "pi_local",\n]);',
+    ),
+    # --- packages/adapter-utils/src/session-compaction.ts: two chunks ---
+    (
+        "packages/adapter-utils/src/session-compaction.ts",
+        '  "gemini_local",\n  "hermes_local",\n  "opencode_local",\n  "pi_local",\n]);',
+        '  "gemini_local",\n  "opencode_local",\n  "pi_local",\n]);',
+    ),
+    (
+        "packages/adapter-utils/src/session-compaction.ts",
+        "  pi_local: {\n"
+        "    supportsSessionResume: true,\n"
+        '    nativeContextManagement: "unknown",\n'
+        "    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,\n"
+        "  },\n"
+        "  hermes_local: {\n"
+        "    supportsSessionResume: true,\n"
+        '    nativeContextManagement: "confirmed",\n'
+        "    defaultSessionCompaction: ADAPTER_MANAGED_SESSION_POLICY,\n"
+        "  },\n"
+        "};\n",
+        "  pi_local: {\n"
+        "    supportsSessionResume: true,\n"
+        '    nativeContextManagement: "unknown",\n'
+        "    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,\n"
+        "  },\n"
+        "};\n",
+    ),
+    # --- server/src/routes/agents.ts: drop hermes_local row from map ---
+    (
+        "server/src/routes/agents.ts",
+        '    gemini_local: "instructionsFilePath",\n'
+        '    hermes_local: "instructionsFilePath",\n'
+        '    opencode_local: "instructionsFilePath",\n',
+        '    gemini_local: "instructionsFilePath",\n'
+        '    opencode_local: "instructionsFilePath",\n',
+    ),
+    # --- server/src/routes/adapters.ts: scrub a hermes-mentioning comment ---
+    (
+        "server/src/routes/adapters.ts",
+        '    // e.g. "@henkey/hermes-proactiva-adapter@0.3.0" → packageName + version',
+        '    // e.g. "@scope/some-adapter@0.3.0" → packageName + version',
+    ),
+
+    # --- lucide-react `Paperclip` icon removal ---
+    # Upstream paperclip uses lucide's `Paperclip` icon as both its brand mark
+    # and as an attachment-button icon. The sweeping paperclip → proactiva
+    # text rename turns those imports into `Proactiva`, which lucide does not
+    # export (white screen). Proactiva drops the paperclip iconography entirely:
+    # brand spots use the ProactivaLogo SVG; attachment buttons use Image /
+    # File / Upload depending on intent.
+    (
+        "ui/src/components/CompanyRail.tsx",
+        'import { Proactiva, Plus } from "lucide-react";',
+        'import { Plus } from "lucide-react";\nimport { ProactivaLogo } from "./ProactivaLogo";',
+    ),
+    (
+        "ui/src/components/CompanyRail.tsx",
+        '        <Proactiva className="h-5 w-5 text-foreground" />',
+        '        <ProactivaLogo className="h-5 w-5 text-foreground" />',
+    ),
+    (
+        "ui/src/components/CommentThread.tsx",
+        'import { ArrowRight, Check, Copy, Proactiva } from "lucide-react";',
+        'import { ArrowRight, Check, Copy, Image } from "lucide-react";',
+    ),
+    (
+        "ui/src/components/CommentThread.tsx",
+        '                  <Proactiva className="h-4 w-4" />',
+        '                  <Image className="h-4 w-4" />',
+    ),
+    (
+        "ui/src/components/IssueChatThread.tsx",
+        'import { AlertTriangle, ArrowRight, Brain, Check, ChevronDown, Copy, Hammer, Loader2, MoreHorizontal, Proactiva, Search, Square, ThumbsDown, ThumbsUp } from "lucide-react";',
+        'import { AlertTriangle, ArrowRight, Brain, Check, ChevronDown, Copy, Hammer, Image, Loader2, MoreHorizontal, Search, Square, ThumbsDown, ThumbsUp } from "lucide-react";',
+    ),
+    (
+        "ui/src/components/IssueChatThread.tsx",
+        '              <Proactiva className="h-4 w-4" />',
+        '              <Image className="h-4 w-4" />',
+    ),
+    (
+        "ui/src/components/NewIssueDialog.tsx",
+        "  Calendar,\n  Proactiva,\n  FileText,",
+        "  Calendar,\n  File,\n  Upload,\n  FileText,",
+    ),
+    (
+        "ui/src/components/NewIssueDialog.tsx",
+        '                            <Proactiva className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />',
+        '                            <File className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />',
+    ),
+    (
+        "ui/src/components/NewIssueDialog.tsx",
+        '            <Proactiva className="h-3 w-3" />',
+        '            <Upload className="h-3 w-3" />',
+    ),
+    (
+        "ui/src/pages/IssueDetail.tsx",
+        "  MoreVertical,\n  Proactiva,\n  Plus,",
+        "  MoreVertical,\n  Upload,\n  Plus,",
+    ),
+    (
+        "ui/src/pages/IssueDetail.tsx",
+        '        <Proactiva className="h-3.5 w-3.5 mr-1.5" />',
+        '        <Upload className="h-3.5 w-3.5 mr-1.5" />',
+    ),
+    (
+        "ui/src/pages/CompanySkills.tsx",
+        "  ExternalLink,\n  Proactiva,\n  Pencil,",
+        "  ExternalLink,\n  Pencil,",
+    ),
+    (
+        "ui/src/pages/CompanySkills.tsx",
+        'import { EmptyState } from "../components/EmptyState";',
+        'import { EmptyState } from "../components/EmptyState";\nimport { ProactivaLogo } from "../components/ProactivaLogo";',
+    ),
+    (
+        "ui/src/pages/CompanySkills.tsx",
+        '      return { icon: Proactiva, label: sourceLabel ?? "Proactiva", managedLabel: "Proactiva managed" };',
+        '      return { icon: ProactivaLogo, label: sourceLabel ?? "Proactiva", managedLabel: "Proactiva managed" };',
+    ),
+]
 
 
 # ===========================================================================
@@ -310,6 +576,56 @@ def phase_second_pass(target: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Phase 6b: Strip third-party paperclip-branded content (hermes, etc.)
+#
+# Upstream paperclip imports a third-party hermes adapter whose npm package
+# only exists under the paperclip name. Proactiva ships without it. This phase
+# removes the imports/registrations that the text-replacement phase would
+# otherwise leave referencing a nonexistent `hermes-proactiva-adapter` package.
+# If any patch misses, we warn — upstream likely refactored and the strip
+# needs updating here, not silently left in the tree.
+# ---------------------------------------------------------------------------
+
+def phase_post_rebrand_strips(target: Path) -> None:
+    print("\n[Phase 6b] Applying post-rebrand strips (hermes, etc.)...")
+
+    if not POST_REBRAND_STRIPS:
+        log("(nothing configured to strip)")
+        return
+
+    applied = 0
+    missed = []
+    for rel_path, old_chunk, new_chunk in POST_REBRAND_STRIPS:
+        p = target / rel_path
+        if not p.exists():
+            log(f"WARNING: Target not found (skipping): {rel_path}")
+            missed.append(rel_path)
+            continue
+        try:
+            content = p.read_text(encoding="utf-8")
+        except (OSError, PermissionError) as e:
+            log(f"WARNING: Could not read {rel_path}: {e}")
+            missed.append(rel_path)
+            continue
+
+        if old_chunk not in content:
+            # Already stripped (idempotent re-run) OR upstream refactored.
+            # Distinguish by checking whether new_chunk is present.
+            if new_chunk and new_chunk in content:
+                continue  # already applied
+            log(f"WARNING: Strip did not match {rel_path} — upstream may have refactored. Update POST_REBRAND_STRIPS.")
+            missed.append(rel_path)
+            continue
+
+        p.write_text(content.replace(old_chunk, new_chunk, 1), encoding="utf-8")
+        applied += 1
+
+    log(f"Applied {applied} strips, {len(missed)} misses")
+    if missed:
+        log("Review the warnings above — unexpected misses usually mean hermes leaked back in.")
+
+
+# ---------------------------------------------------------------------------
 # Phase 7: Verification
 # ---------------------------------------------------------------------------
 
@@ -401,6 +717,7 @@ def main() -> None:
     phase_rename_dirs(target)
     phase_rename_files(target)
     phase_second_pass(target)
+    phase_post_rebrand_strips(target)
     issues = phase_verify(target)
 
     print("\n=== Done ===")

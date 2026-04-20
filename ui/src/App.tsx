@@ -1,7 +1,6 @@
-import { Navigate, Outlet, Route, Routes, useLocation, useParams } from "@/lib/router";
+import { Link, Navigate, Outlet, Route, Routes, useLocation } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { Layout } from "./components/Layout";
-import { OnboardingWizard } from "./components/OnboardingWizard";
 import { CloudAccessGate } from "./components/CloudAccessGate";
 import { Dashboard } from "./pages/Dashboard";
 import { Companies } from "./pages/Companies";
@@ -49,17 +48,26 @@ import { CliAuthPage } from "./pages/CliAuth";
 import { InviteLandingPage } from "./pages/InviteLanding";
 import { JoinRequestQueue } from "./pages/JoinRequestQueue";
 import { NotFoundPage } from "./pages/NotFound";
+import { ClientIntake } from "./pages/ClientIntake";
+import { ClientDashboard } from "./pages/ClientDashboard";
+import { PracticeSetup } from "./pages/PracticeSetup";
+import { NewCompany } from "./pages/NewCompany";
 import { useCompany } from "./context/CompanyContext";
-import { useDialog } from "./context/DialogContext";
 import { loadLastInboxTab } from "./lib/inbox";
-import { shouldRedirectCompanylessRouteToOnboarding } from "./lib/onboarding-route";
+import { isPracticeCompany } from "./lib/practice-company";
+
+const NEW_COMPANY_PATHS = new Set(["/new-company", "/setup-practice", "/onboarding"]);
+function shouldRedirectCompanylessRouteToNewCompany(pathname: string): boolean {
+  return !NEW_COMPANY_PATHS.has(pathname);
+}
 
 function boardRoutes() {
   return (
     <>
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="dashboard" element={<Dashboard />} />
-      <Route path="onboarding" element={<OnboardingRoutePage />} />
+      <Route path="engagement" element={<ClientDashboard />} />
+      <Route path="onboarding" element={<ClientIntake />} />
       <Route path="companies" element={<Companies />} />
       <Route path="company/settings" element={<CompanySettings />} />
       <Route path="company/settings/access" element={<CompanyAccess />} />
@@ -137,46 +145,6 @@ function LegacySettingsRedirect() {
   return <Navigate to={`/instance/settings/general${location.search}${location.hash}`} replace />;
 }
 
-function OnboardingRoutePage() {
-  const { companies } = useCompany();
-  const { openOnboarding } = useDialog();
-  const { companyPrefix } = useParams<{ companyPrefix?: string }>();
-  const matchedCompany = companyPrefix
-    ? companies.find((company) => company.issuePrefix.toUpperCase() === companyPrefix.toUpperCase()) ?? null
-    : null;
-
-  const title = matchedCompany
-    ? `Add another agent to ${matchedCompany.name}`
-    : companies.length > 0
-      ? "Create another company"
-      : "Create your first company";
-  const description = matchedCompany
-    ? "Run onboarding again to add an agent and a starter task for this company."
-    : companies.length > 0
-      ? "Run onboarding again to create another company and seed its first agent."
-      : "Get started by creating a company and your first agent.";
-
-  return (
-    <div className="mx-auto max-w-xl py-10">
-      <div className="rounded-lg border border-border bg-card p-6">
-        <h1 className="text-xl font-semibold">{title}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-        <div className="mt-4">
-          <Button
-            onClick={() =>
-              matchedCompany
-                ? openOnboarding({ initialStep: 2, companyId: matchedCompany.id })
-                : openOnboarding()
-            }
-          >
-            {matchedCompany ? "Add Agent" : "Start Onboarding"}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function CompanyRootRedirect() {
   const { companies, selectedCompany, loading } = useCompany();
   const location = useLocation();
@@ -187,18 +155,17 @@ function CompanyRootRedirect() {
 
   const targetCompany = selectedCompany ?? companies[0] ?? null;
   if (!targetCompany) {
-    if (
-      shouldRedirectCompanylessRouteToOnboarding({
-        pathname: location.pathname,
-        hasCompanies: false,
-      })
-    ) {
-      return <Navigate to="/onboarding" replace />;
+    if (shouldRedirectCompanylessRouteToNewCompany(location.pathname)) {
+      return <Navigate to="/new-company" replace />;
     }
     return <NoCompaniesStartPage />;
   }
 
-  return <Navigate to={`/${targetCompany.issuePrefix}/dashboard`} replace />;
+  // Practice → operator Dashboard. Client engagement → wildvine ClientDashboard.
+  const landingPath = isPracticeCompany(targetCompany.id, companies)
+    ? "dashboard"
+    : "engagement";
+  return <Navigate to={`/${targetCompany.issuePrefix}/${landingPath}`} replace />;
 }
 
 function UnprefixedBoardRedirect() {
@@ -211,13 +178,8 @@ function UnprefixedBoardRedirect() {
 
   const targetCompany = selectedCompany ?? companies[0] ?? null;
   if (!targetCompany) {
-    if (
-      shouldRedirectCompanylessRouteToOnboarding({
-        pathname: location.pathname,
-        hasCompanies: false,
-      })
-    ) {
-      return <Navigate to="/onboarding" replace />;
+    if (shouldRedirectCompanylessRouteToNewCompany(location.pathname)) {
+      return <Navigate to="/new-company" replace />;
     }
     return <NoCompaniesStartPage />;
   }
@@ -231,8 +193,6 @@ function UnprefixedBoardRedirect() {
 }
 
 function NoCompaniesStartPage() {
-  const { openOnboarding } = useDialog();
-
   return (
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
@@ -241,7 +201,9 @@ function NoCompaniesStartPage() {
           Get started by creating a company.
         </p>
         <div className="mt-4">
-          <Button onClick={() => openOnboarding()}>New Company</Button>
+          <Button asChild>
+            <Link to="/new-company">New Company</Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -259,7 +221,9 @@ export function App() {
 
         <Route element={<CloudAccessGate />}>
           <Route index element={<CompanyRootRedirect />} />
-          <Route path="onboarding" element={<OnboardingRoutePage />} />
+          <Route path="onboarding" element={<ClientIntake />} />
+          <Route path="setup-practice" element={<PracticeSetup />} />
+          <Route path="new-company" element={<NewCompany />} />
           <Route path="instance" element={<Navigate to="/instance/settings/general" replace />} />
           <Route path="instance/settings" element={<Layout />}>
             <Route index element={<Navigate to="general" replace />} />
@@ -305,7 +269,6 @@ export function App() {
           <Route path="*" element={<NotFoundPage scope="global" />} />
         </Route>
       </Routes>
-      <OnboardingWizard />
     </>
   );
 }

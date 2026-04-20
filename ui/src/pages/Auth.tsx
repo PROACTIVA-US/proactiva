@@ -5,7 +5,7 @@ import { authApi } from "../api/auth";
 import { queryKeys } from "../lib/queryKeys";
 import { getRememberedInvitePath } from "../lib/invite-memory";
 import { Button } from "@/components/ui/button";
-import { AsciiArtAnimation } from "@/components/AsciiArtAnimation";
+import { ProactivaLogo } from "@/components/ProactivaLogo";
 import { Sparkles } from "lucide-react";
 
 type AuthMode = "sign_in" | "sign_up";
@@ -175,9 +175,15 @@ export function AuthPage() {
         </div>
       </div>
 
-      {/* Right half — ASCII art animation (hidden on mobile) */}
-      <div className="hidden md:block w-1/2 overflow-hidden">
-        <AsciiArtAnimation />
+      {/* Right half — brand mark on a soft gradient (hidden on mobile) */}
+      <div
+        className="hidden md:flex w-1/2 items-center justify-center overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--brand) 18%, transparent), transparent 60%), var(--background)",
+        }}
+      >
+        <ProactivaLogo size={128} className="text-foreground/70" />
       </div>
     </div>
   );

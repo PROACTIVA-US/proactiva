@@ -98,7 +98,6 @@ vi.mock("./SidebarAccountMenu", () => ({
 vi.mock("../context/DialogContext", () => ({
   useDialog: () => ({
     openNewIssue: vi.fn(),
-    openOnboarding: vi.fn(),
   }),
 }));
 

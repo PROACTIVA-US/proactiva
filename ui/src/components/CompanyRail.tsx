@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
-import { Proactiva, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { ProactivaLogo } from "./ProactivaLogo";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   DndContext,
@@ -17,7 +18,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useCompany } from "../context/CompanyContext";
-import { useDialog } from "../context/DialogContext";
 import { cn } from "../lib/utils";
 import { queryKeys } from "../lib/queryKeys";
 import { sidebarBadgesApi } from "../api/sidebarBadges";
@@ -125,7 +125,6 @@ function SortableCompanyItem({
 
 export function CompanyRail() {
   const { companies, selectedCompanyId, setSelectedCompanyId } = useCompany();
-  const { openOnboarding } = useDialog();
   const navigate = useNavigate();
   const location = useLocation();
   const isInstanceRoute = location.pathname.startsWith("/instance/");
@@ -202,7 +201,7 @@ export function CompanyRail() {
     <div className="flex flex-col items-center w-[72px] shrink-0 h-full bg-background border-r border-border">
       {/* Proactiva icon - aligned with top sections (implied line, no visible border) */}
       <div className="flex items-center justify-center h-12 w-full shrink-0">
-        <Proactiva className="h-5 w-5 text-foreground" />
+        <ProactivaLogo className="h-5 w-5 text-foreground" />
       </div>
 
       {/* Company list */}
@@ -243,7 +242,7 @@ export function CompanyRail() {
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
             <button
-              onClick={() => openOnboarding()}
+              onClick={() => navigate("/new-company")}
               className="flex items-center justify-center w-11 h-11 rounded-[22px] hover:rounded-[14px] border-2 border-dashed border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-[border-color,color,border-radius] duration-150"
               aria-label="Add company"
             >

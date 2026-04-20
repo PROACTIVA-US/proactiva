@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function deriveInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -139,14 +140,17 @@ export function ProfileSettings() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <UserRoundPen className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">Profile</h1>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <UserRoundPen className="h-5 w-5 text-muted-foreground" />
+            <h1 className="text-lg font-semibold">Profile</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Control how your account appears in the sidebar and other board surfaces.
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Control how your account appears in the sidebar and other board surfaces.
-        </p>
+        <ThemeToggle />
       </div>
 
       {actionError ? (
