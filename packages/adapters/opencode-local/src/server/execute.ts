@@ -19,6 +19,7 @@ import {
   renderTemplate,
   renderProactivaWakePrompt,
   stringifyProactivaWakePayload,
+  DEFAULT_PROACTIVA_AGENT_PROMPT_TEMPLATE,
   runChildProcess,
   readProactivaRuntimeSkillEntries,
   resolveProactivaDesiredSkillNames,
@@ -97,7 +98,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const promptTemplate = asString(
     config.promptTemplate,
-    "You are agent {{agent.id}} ({{agent.name}}). Continue your Proactiva work.",
+    DEFAULT_PROACTIVA_AGENT_PROMPT_TEMPLATE,
   );
   const command = asString(config.command, "opencode");
   const model = asString(config.model, "").trim();

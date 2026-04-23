@@ -258,7 +258,7 @@ See [doc/DEVELOPING.md](https://github.com/PROACTIVA-US/proactiva/blob/master/do
 - ⚪ Artifacts & Deployments
 - ⚪ CEO Chat
 - ⚪ MAXIMIZER MODE
-- ⚪ Multiple Human Users
+- ✅ Multiple Human Users
 - ⚪ Cloud / Sandbox agents (e.g. Cursor / e2b agents)
 - ⚪ Cloud deployments
 - ⚪ Desktop App

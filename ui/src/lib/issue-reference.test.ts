@@ -12,6 +12,11 @@ describe("issue-reference", () => {
     expect(parseIssuePathIdFromPath("http://localhost:3100/PAP/issues/PAP-1179")).toBe("PAP-1179");
   });
 
+  it("does not treat GitHub issue URLs as internal Proactiva issue links", () => {
+    expect(parseIssuePathIdFromPath("https://github.com/PROACTIVA-US/proactiva/issues/1778")).toBeNull();
+    expect(parseIssueReferenceFromHref("https://github.com/PROACTIVA-US/proactiva/issues/1778")).toBeNull();
+  });
+
   it("ignores placeholder issue paths", () => {
     expect(parseIssuePathIdFromPath("/issues/:id")).toBeNull();
     expect(parseIssuePathIdFromPath("http://localhost:3100/issues/:id")).toBeNull();

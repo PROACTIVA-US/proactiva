@@ -47,6 +47,8 @@ Read tools:
 - `proactivaListDocumentRevisions`
 - `proactivaListProjects`
 - `proactivaGetProject`
+- `proactivaGetIssueWorkspaceRuntime`
+- `proactivaWaitForIssueWorkspaceService`
 - `proactivaListGoals`
 - `proactivaGetGoal`
 - `proactivaListApprovals`
@@ -61,8 +63,12 @@ Write tools:
 - `proactivaCheckoutIssue`
 - `proactivaReleaseIssue`
 - `proactivaAddComment`
+- `proactivaSuggestTasks`
+- `proactivaAskUserQuestions`
+- `proactivaRequestConfirmation`
 - `proactivaUpsertIssueDocument`
 - `proactivaRestoreIssueDocumentRevision`
+- `proactivaControlIssueWorkspaceServices`
 - `proactivaCreateApproval`
 - `proactivaLinkIssueApproval`
 - `proactivaUnlinkIssueApproval`
