@@ -7,7 +7,7 @@ import type {
 } from "./types.js";
 
 const DEFAULT_ENDPOINTS = [
-  "https://telemetry.proactiva.ing/ingest",
+  "https://telemetry.proactiva.us/ingest",
   "https://rusqrrg391.execute-api.us-east-1.amazonaws.com/ingest",
 ] as const;
 const BATCH_SIZE = 50;

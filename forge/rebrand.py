@@ -55,9 +55,16 @@ TEXT_REPLACEMENTS = [
     ("github.com/paperclipai/", "github.com/PROACTIVA-US/"),
     ("github.com/paperclip-ai/", "github.com/PROACTIVA-US/"),
 
-    # Domains
-    ("paperclip.com", "proactiva.com"),
-    ("paperclipai.com", "proactiva.com"),
+    # Domains — Proactiva brand owns proactiva.us (never .ing, never .com).
+    # The .ing rewrite is defensive: previous syncs left `proactiva.ing`
+    # strings behind (including in UI docs links, TOS URLs, telemetry
+    # defaults, and the synthetic commit-author email). This rule makes
+    # sure they cannot come back through a paperclip re-sync.
+    ("paperclip.com", "proactiva.us"),
+    ("paperclipai.com", "proactiva.us"),
+    ("paperclip.ing", "proactiva.us"),
+    ("paperclipai.ing", "proactiva.us"),
+    ("proactiva.ing", "proactiva.us"),
 
     # npm scope
     ("@paperclipai/", "@proactiva/"),
@@ -320,6 +327,10 @@ def phase_verify(target: Path) -> dict[str, list[str]]:
         "paperclip", "Paperclip", "PAPERCLIP",
         "paperclipai", "paperclip-ai",
         "paperclip.com", "paperclipai.com",
+        "paperclip.ing", "paperclipai.ing",
+        # Brand owns proactiva.us, not .ing — any surviving match here
+        # means the rebrand pass missed one.
+        "proactiva.ing",
     ]
     filename_terms = ["paperclip", "Paperclip", "PAPERCLIP"]
 

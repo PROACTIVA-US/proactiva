@@ -529,7 +529,7 @@ describe("worktree helpers", () => {
         const sourceDbClient = createDb(sourceDb.connectionString);
         await sourceDbClient.insert(authUsers).values({
           id: "user-existing",
-          email: "existing@proactiva.ing",
+          email: "existing@proactiva.us",
           name: "Existing User",
           emailVerified: true,
           createdAt: new Date(),
@@ -589,7 +589,7 @@ describe("worktree helpers", () => {
             `postgres://proactiva:proactiva@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/proactiva`,
           );
           const seededUsers = await targetDb.select().from(authUsers);
-          expect(seededUsers.some((row) => row.email === "existing@proactiva.ing")).toBe(true);
+          expect(seededUsers.some((row) => row.email === "existing@proactiva.us")).toBe(true);
         } finally {
           await targetPg.stop();
         }

@@ -2,7 +2,7 @@ import { gzipSync } from "node:zlib";
 import type { FeedbackTraceBundle } from "@proactiva/shared";
 import type { Config } from "../config.js";
 
-const DEFAULT_FEEDBACK_EXPORT_BACKEND_URL = "https://telemetry.proactiva.ing";
+const DEFAULT_FEEDBACK_EXPORT_BACKEND_URL = "https://telemetry.proactiva.us";
 
 function buildFeedbackShareObjectKey(bundle: FeedbackTraceBundle, exportedAt: Date) {
   const year = String(exportedAt.getUTCFullYear());

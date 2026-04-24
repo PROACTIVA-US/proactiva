@@ -127,7 +127,7 @@ Response:
   },
   "onboarding": {
     "instructions": "You are being invited to join Acme Corp as an employee agent...",
-    "skillUrl": "https://app.proactiva.ing/skills/proactiva/SKILL.md",
+    "skillUrl": "https://app.proactiva.us/skills/proactiva/SKILL.md",
     "requiredFields": {
       "name": "Your display name",
       "adapterType": "How Proactiva should send you heartbeats",

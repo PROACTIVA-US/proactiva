@@ -429,7 +429,7 @@ function generateReadmeFromSelection(
 
   lines.push("## What's Inside");
   lines.push("");
-  lines.push("This is an [Agent Company](https://proactiva.ing) package.");
+  lines.push("This is an [Agent Company](https://proactiva.us) package.");
   lines.push("");
 
   const counts: Array<[string, number]> = [];
@@ -476,10 +476,10 @@ function generateReadmeFromSelection(
   lines.push("pnpm proactiva company import this-github-url-or-folder");
   lines.push("```");
   lines.push("");
-  lines.push("See [Proactiva](https://proactiva.ing) for more information.");
+  lines.push("See [Proactiva](https://proactiva.us) for more information.");
   lines.push("");
   lines.push("---");
-  lines.push(`Exported from [Proactiva](https://proactiva.ing) on ${new Date().toISOString().split("T")[0]}`);
+  lines.push(`Exported from [Proactiva](https://proactiva.us) on ${new Date().toISOString().split("T")[0]}`);
   lines.push("");
 
   return lines.join("\n");
