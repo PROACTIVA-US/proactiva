@@ -102,7 +102,7 @@ import {
   MessageSquare,
   MoreHorizontal,
   MoreVertical,
-  Proactiva,
+  Paperclip as Proactiva,
   Plus,
   Repeat,
   SlidersHorizontal,

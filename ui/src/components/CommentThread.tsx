@@ -9,7 +9,7 @@ import type {
   IssueComment,
 } from "@proactiva/shared";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Copy, Proactiva } from "lucide-react";
+import { ArrowRight, Check, Copy, Paperclip as Proactiva } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Identity } from "./Identity";
 import { InlineEntitySelector, type InlineEntityOption } from "./InlineEntitySelector";

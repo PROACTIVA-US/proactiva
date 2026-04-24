@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Proactiva, Plus } from "lucide-react";
+import { Paperclip as Proactiva, Plus } from "lucide-react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   DndContext,

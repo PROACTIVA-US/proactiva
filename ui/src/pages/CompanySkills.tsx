@@ -46,7 +46,7 @@ import {
   Github,
   Link2,
   ExternalLink,
-  Proactiva,
+  Paperclip as Proactiva,
   Pencil,
   Plus,
   RefreshCw,

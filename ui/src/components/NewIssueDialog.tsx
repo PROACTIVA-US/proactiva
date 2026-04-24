@@ -47,7 +47,7 @@ import {
   AlertTriangle,
   Tag,
   Calendar,
-  Proactiva,
+  Paperclip as Proactiva,
   FileText,
   Loader2,
   ListTree,
