@@ -48,6 +48,10 @@ diagnostics/
 # Doc maintenance cursor
 .doc-review-cursor
 
+# Local docs preview (built by scripts/docs-preview.py)
+docs/_preview.html
+docs/_preview.header.tmp
+
 # Playwright
 tests/e2e/test-results/
 tests/e2e/playwright-report/
